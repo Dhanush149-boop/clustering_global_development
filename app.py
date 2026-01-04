@@ -11,8 +11,13 @@ st.set_page_config(
 # ------------------ REMOVE DEFAULT PADDING ------------------
 st.markdown("""
 <style>
-.block-container { padding-top: 0rem !important; }
-header, footer { visibility: hidden; height: 0; }
+.block-container {
+    padding-top: 0rem !important;
+}
+header, footer {
+    visibility: hidden;
+    height: 0;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -36,48 +41,41 @@ body {
     align-items: center;
     justify-content: center;
 }
+
 .header-title {
     font-size: 22px;
     color: white;
     font-weight: 700;
 }
-.page-spacer { height: 70px; }
 
-/* COUNTRY CARD */
-.country-card {
+.page-spacer {
+    height: 70px;
+}
+
+/* CARD */
+.card {
     background: white;
     border-radius: 14px;
-    padding: 14px;
+    padding: 18px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     text-align: center;
-    cursor: pointer;
     transition: all 0.3s ease;
 }
-.country-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.18);
-}
-.country-name {
-    font-size: 16px;
-    font-weight: 700;
-    color: #2b5876;
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.16);
 }
 
-/* DETAIL CARD */
-.detail-card {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    margin-bottom: 14px;
-}
-.detail-title {
-    font-size: 14px;
+.card-title {
+    font-size: 17px;
     font-weight: 700;
+    margin-bottom: 6px;
 }
-.detail-value {
+
+.card-sub {
     font-size: 13px;
-    color: #555;
+    color: #666;
 }
 
 /* FOOTER */
@@ -102,60 +100,45 @@ st.markdown("""
 <div class="page-spacer"></div>
 """, unsafe_allow_html=True)
 
-# ------------------ LOAD DATA ------------------
+# ------------------ DATA LOADING ------------------
 DATA_DIR = Path(__file__).parent
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def load_data():
-    return pd.read_csv(DATA_DIR / "World_development_mesurement.csv", encoding="latin-1")
+    return pd.read_csv(
+        DATA_DIR / "World_development_mesurement.csv",
+        encoding="latin-1"
+    )
 
-df = load_data()
+with st.spinner("✨ Loading World Development Data..."):
+    df = load_data()
 
-# ------------------ SESSION STATE ------------------
-if "selected_country" not in st.session_state:
-    st.session_state.selected_country = None
+# ------------------ MAIN CONTENT ------------------
+st.subheader("📊 Country Development Overview")
 
-# ------------------ SEARCH ------------------
-st.subheader("🔍 Search Country")
-
-
-
+# Country selection
 countries = sorted(df["Country"].unique())
 selected_country = st.selectbox("🌐 Select a Country", countries)
 
-country_data = df[df["Country"] == search_text].iloc[0]
+country_data = df[df["Country"] == selected_country].iloc[0]
 
+# ------------------ DATA CARDS ------------------
+cols = st.columns(4)
 
+for i, (col, value) in enumerate(country_data.items()):
+    if col == "Country":
+        continue
+    with cols[i % 4]:
+        st.markdown(f"""
+        <div class="card">
+            <div class="card-title">{col}</div>
+            <div class="card-sub">{value}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-# ------------------ COUNTRY CARDS GRID ------------------
-st.subheader("🌐 Countries")
-
-cols = st.columns(5)
-for i, country in enumerate(filtered_df["Country"].unique()):
-    with cols[i % 5]:
-        if st.button(country, key=country):
-            st.session_state.selected_country = country
-
-# ------------------ COUNTRY DETAILS ------------------
-if st.session_state.selected_country:
-    st.divider()
-    st.subheader(f"📊 {st.session_state.selected_country} – Full Details")
-
-    country_data = df[df["Country"] == st.session_state.selected_country].iloc[0]
-
-    left, right = st.columns(2)
-
-    for i, (col, val) in enumerate(country_data.items()):
-        if col == "Country":
-            continue
-        target = left if i % 2 == 0 else right
-        with target:
-            st.markdown(f"""
-            <div class="detail-card">
-                <div class="detail-title">{col}</div>
-                <div class="detail-value">{val}</div>
-            </div>
-            """, unsafe_allow_html=True)
+# ------------------ RAW DATA PREVIEW ------------------
+with st.expander("📄 View Raw Dataset"):
+    st.dataframe(df, use_container_width=True)
 
 # ------------------ FOOTER ------------------
 st.markdown("""
