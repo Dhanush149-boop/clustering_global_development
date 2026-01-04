@@ -117,9 +117,15 @@ if "selected_country" not in st.session_state:
 
 # ------------------ SEARCH ------------------
 st.subheader("🔍 Search Country")
-search_text = st.text_input("Type country name")
 
-filtered_df = df[df["Country"].str.contains(search_text, case=False, na=False)]
+
+
+countries = sorted(df["Country"].unique())
+selected_country = st.selectbox("🌐 Select a Country", countries)
+
+country_data = df[df["Country"] == search_text].iloc[0]
+
+
 
 # ------------------ COUNTRY CARDS GRID ------------------
 st.subheader("🌐 Countries")
