@@ -37,6 +37,7 @@ body {
     height: 64px;
     background: linear-gradient(90deg, #2b5876, #4e4376);
     z-index: 999;
+    left:0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -82,6 +83,7 @@ body {
 .footer {
     position: fixed;
     bottom: 0;
+    left:0;
     width: 100%;
     background: #2b5876;
     color: white;
